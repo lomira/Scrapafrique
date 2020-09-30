@@ -118,7 +118,7 @@ if os.path.exists(pickel_path):
         if None not in (list_AO[pays], old_AO[pays]):
             new = set(list_AO[pays]) - set(old_AO[pays])
             if new:
-                print(pays)
+                print(pays, config[pays][0])
 
 with open(pickel_path, "wb") as handle:
     pickle.dump(list_AO, handle, protocol=pickle.HIGHEST_PROTOCOL)
