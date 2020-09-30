@@ -1,8 +1,15 @@
+import os
 import pprint
 import re
 import scrappers
 import pickle
 
+# Fichier de configuration du parser
+# Pour chaque pays il faut dans cet ordre :
+# - URL
+# - balise à check
+# - attribut de la balise
+# - valeur de l'attribut (possibilité de faire du regex)
 
 config = {
     "Bénin": ["https://arcep.bj/communiques/", "td", "class", "column-2"],
@@ -73,9 +80,19 @@ config = {
         "class",
         re.compile("^aidanews2_art aidacat_87"),
     ],
-    "Maroc": ["https://www.anrt.ma/publications/appels-doffres/consulter-les-appels-doffres", "span", "class", "field-content"],
+    "Maroc": [
+        "https://www.anrt.ma/publications/appels-doffres/consulter-les-appels-doffres",
+        "span",
+        "class",
+        "field-content",
+    ],
     "Maurice": ["https://www.icta.mu/mediaoffice/tender.htm", "li", "", ""],
-    "Mauritanie": ["http://are.mr/index.php/avis-et-communiques", "h2", "class", "article-title"],
+    "Mauritanie": [
+        "http://are.mr/index.php/avis-et-communiques",
+        "h2",
+        "class",
+        "article-title",
+    ],
     "Niger": ["https://www.arcep.ne/publications.php?sid=96", "h4", "class", None],
     "Sénégal": [
         "https://www.artpsenegal.net/fr/espace-pro/appels-doffres",
@@ -85,12 +102,23 @@ config = {
     ],
     "Tchad": ["https://arcep.td/avis", "span", "class", "avis-title"],
     "Togo": ["http://www.artp.tg/", "p", "id", "p_titre"],
-    "Tunisie": ["http://www.intt.tn/fr/index.php?allao", "span", "class", "dateactu"]
+    "Tunisie": ["http://www.intt.tn/fr/index.php?allao", "span", "class", "dateactu"],
 }
+
+pickel_path = "data/save.pickel"
 
 list_AO = dict.fromkeys(config.keys())
 for key, value in config.items():
     list_AO[key] = scrappers.simple_parser(value[0], value[1], value[2], value[3])
 
-pp = pprint.PrettyPrinter(indent=4)
-pp.pprint(list_AO)
+if os.path.exists(pickel_path):
+    with open(pickel_path, "rb") as handle:
+        old_AO = pickle.load(handle)
+    for pays in list_AO.keys():
+        if None not in (list_AO[pays], old_AO[pays]):
+            new = set(list_AO[pays]) - set(old_AO[pays])
+            if new:
+                print(pays)
+
+with open(pickel_path, "wb") as handle:
+    pickle.dump(list_AO, handle, protocol=pickle.HIGHEST_PROTOCOL)
