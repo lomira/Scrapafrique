@@ -1,5 +1,5 @@
 import time
-
+import re
 import requests
 from bs4 import BeautifulSoup
 
@@ -13,24 +13,49 @@ def get_soup(url):
     return soup
 
 
-def niger(url):
+def simple_parser(url, balise, attr_titre, attr_valeur):
     soup = get_soup(url)
     if soup is None:
         return None
     else:
-        h4list = [h4.text.strip() for h4 in soup.find_all("h4", attrs={"class": None})]
-        return h4list
-
-
-def senegal(url):
-    soup = get_soup(url)
-    if soup is None:
-        return None
-    else:
-        divlist = [
-            div.text.strip()
-            for div in soup.find_all(
-                "div", attrs={"class": "views-field views-field-title"}
-            )
+        ret = [
+            el.text.strip()
+            for el in soup.find_all(balise, attrs={attr_titre: attr_valeur})
         ]
-        return divlist
+        return ret
+
+
+def benin():
+    return simple_parser("https://arcep.bj/communiques/", "td", "class", "column-2")
+
+
+def burkina():
+    return simple_parser(
+        "http://www.arcep.bf/category/actualites/", "h4", "class", "pl-title left-txt"
+    )
+
+
+def burundi():
+    return simple_parser(
+        "http://arct.gov.bi/index.php/publications/travaux-de-recherche",
+        "p",
+        "style",
+        "text-align: justify;",
+    )
+
+
+def cameroun():
+    return simple_parser(
+        "http://www.art.cm/fr/reglementation/dao", "div", "class", "views-row-inner"
+    )
+
+
+def niger():
+    return simple_parser(
+        "https://www.arcep.ne/publications.php?sid=96", "h4", "class", None
+    )
+
+def senegal():
+    return simple_parser(
+        "https://www.artpsenegal.net/fr/espace-pro/appels-doffres", "li", "class", re.compile("row-ao$")
+    )

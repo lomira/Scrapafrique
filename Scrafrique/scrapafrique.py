@@ -1,21 +1,22 @@
+import pprint
 import scrappers
-import helpers
 import pickle
 
-pickle_path = "data/output.pickel"
-with open(pickle_path, "rb") as f:
-    niger_old, senegal_old = pickle.load(f)
-
-# niger_old = []
-niger = scrappers.niger("https://www.arcep.ne/publications.php?sid=96")
-nouveaux = set(niger) - set(niger_old)
-if nouveaux:
-    print(*nouveaux, sep="\n")
 
 
-senegal = scrappers.senegal("https://www.artpsenegal.net/fr/espace-pro/appels-doffres")
-# print(*senegal, sep="\n")
+parsers = {
+    "Bénin": scrappers.benin,
+    "Burkina": scrappers.burkina,
+    "Burundi":scrappers.burundi,
+    "Cameroun":scrappers.cameroun,
+    "Niger": scrappers.niger,
+    "Sénégal": scrappers.senegal,
+}
 
 
-with open(pickle_path, "wb") as f:
-    pickle.dump([niger, senegal], f)
+list_AO = dict.fromkeys(parsers.keys())
+for key, value in parsers.items():
+    list_AO[key] = value()
+
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint(list_AO)
