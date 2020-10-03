@@ -1,6 +1,6 @@
 import time
 import re
-import requests
+import grequests
 import urllib3
 
 from bs4 import BeautifulSoup
@@ -9,20 +9,36 @@ from bs4 import BeautifulSoup
 urllib3.disable_warnings()
 
 
-def get_soup(url):
-    try:
-        req = requests.get(url, verify=False)
-    except requests.exceptions.RequestException as e:
-        return None
-    soup = BeautifulSoup(req.text, "html.parser")
-    return soup
+def get_resp(dict_config: dict):
+    """Renvoie les responses HTTPs d'une liste d'url
+
+    Args:
+        dict_config (dict): Pays:URL
+
+    Returns:
+        dict: Pays:HTTPResponses
+    """
+    urls = [value[0] for (key, value) in dict_config.items()]
+    reqs = (grequests.get(u) for u in urls)
+    resps = grequests.map(reqs)
+    return dict(zip(dict_config.keys(), resps))
 
 
-def simple_parser(url, balise, attr_titre, attr_valeur):
-    soup = get_soup(url)
+def simple_parser(soup, balise, attr_titre, attr_valeur):
+    """Renvoie les élements de la balise avec attr_titre=attr_valeur depuis une Response HTTP
+    Args:
+        soupe : HTTPResponse
+        balise : nom de la basise à parser
+        attr_titre : attribut de la balise à parse (id, class, etc.)
+        attr_valeur : valeur de l'attribu
+
+    Returns:
+        [list]: list des textes qui remplissent les conditions
+    """
     if soup is None:
         return None
     else:
+        soup = BeautifulSoup(soup.text, "html.parser")
         ret = [
             el.text.strip()
             for el in soup.find_all(balise, attrs={attr_titre: attr_valeur})

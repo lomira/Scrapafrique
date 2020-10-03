@@ -1,6 +1,7 @@
 import os
 import pprint
 import re
+import grequests
 import scrappers
 import pickle
 
@@ -106,10 +107,13 @@ config = {
 }
 
 pickel_path = "data/save.pickel"
+# On récupère en Async les responses des requests
+list_AO = scrappers.get_resp(config)
 
-list_AO = dict.fromkeys(config.keys())
+# On parse chacune des requettes selon les élements définition dans config
 for key, value in config.items():
-    list_AO[key] = scrappers.simple_parser(value[0], value[1], value[2], value[3])
+    list_AO[key] = scrappers.simple_parser(list_AO[key], value[1], value[2], value[3])
+
 
 if os.path.exists(pickel_path):
     with open(pickel_path, "rb") as handle:
